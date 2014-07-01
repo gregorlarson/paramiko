@@ -67,8 +67,7 @@ class AgentSSH(object):
             raise SSHException('could not get keys from ssh-agent')
         keys = []
         for i in range(result.get_int()):
-            keys.append(AgentKey(self, result.get_binary()))
-            result.get_string()
+            keys.append(AgentKey(self, result.get_binary(), result.get_string()))
         self._keys = tuple(keys)
 
     def _close(self):
@@ -350,10 +349,11 @@ class AgentKey(PKey):
     authenticating to a remote server (signing).  Most other key operations
     work as expected.
     """
-    def __init__(self, agent, blob):
+    def __init__(self, agent, blob, comment):
         self.agent = agent
         self.blob = blob
         self.name = Message(blob).get_text()
+        self.comment = comment
 
     def asbytes(self):
         return self.blob
@@ -363,6 +363,9 @@ class AgentKey(PKey):
 
     def get_name(self):
         return self.name
+
+    def get_comment(self):
+        return self.comment
 
     def sign_ssh_data(self, data):
         msg = Message()
